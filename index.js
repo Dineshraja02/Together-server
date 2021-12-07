@@ -12,7 +12,7 @@ require("dotenv").config();
 (async ()=>{
     try {
         await mongoose.connect(
-            "mongodb+srv://dinesh:12345@social.wu2tm.mongodb.net/social?retryWrites=true&w=majority",
+            process.env.MONGODB_URL,
             {useNewUrlParser:true , useUnifiedTopology:true},
             ()=>{
                 console.log("Connected with mongodb");
