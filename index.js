@@ -1,42 +1,54 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const morgan = require("morgan");
+const dotenv = require("dotenv");
 const helmet = require("helmet");
-const userRoute = require("./routes/user")
-const authRoute = require("./routes/auth")
+const morgan = require("morgan");
+const multer = require("multer");
+const userRoute = require("./routes/users");
+const authRoute = require("./routes/auth");
 const postRoute = require("./routes/posts");
-const cors = require('cors');
-require("dotenv").config();
+const router = express.Router();
+const path = require("path");
 
-(async ()=>{
-    try {
-        await mongoose.connect(
-            process.env.MONGODB_URL,
-            {useNewUrlParser:true , useUnifiedTopology:true},
-            ()=>{
-                console.log("Connected with mongodb");
-            }
-        );
+dotenv.config();
 
-        //middleware
-        app.use(express.json());
-        app.use(cors());
-        app.use(helmet());
-        app.use(morgan("common"));
+mongoose.connect(
+  process.env.MONGO_URL,
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  () => {
+    console.log("Connected to MongoDB");
+  }
+);
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
-        app.use("/api/users",userRoute);
-        app.use("/api/auth",authRoute);
-        app.use("/api/posts",postRoute);
+//middleware
+app.use(express.json());
+app.use(helmet());
+app.use(morgan("common"));
 
-        const port =process.env.PORT||3001
-        app.listen(port,()=>
-        {
-                console.log("Server running in port 3001");
-        })
-        } catch (error) {
-            console.error(error)
-        }
-})();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, req.body.name);
+  },
+});
 
-    
+const upload = multer({ storage: storage });
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  try {
+    return res.status(200).json("File uploded successfully");
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.use("/api/auth", authRoute);
+app.use("/api/users", userRoute);
+app.use("/api/posts", postRoute);
+
+app.listen(3001, () => {
+  console.log("Backend server is running!");
+});
