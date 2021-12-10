@@ -14,7 +14,7 @@ const path = require("path");
 dotenv.config();
 
 mongoose.connect(
-  process.env.MONGO_URL,
+  process.env.MONGODB_URL,
   { useNewUrlParser: true, useUnifiedTopology: true },
   () => {
     console.log("Connected to MongoDB");
@@ -49,6 +49,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/posts", postRoute);
 
-app.listen(3001, () => {
-  console.log("Backend server is running!");
-});
+const port =process.env.PORT||3001
+        app.listen(port,()=>{
+        console.log("Server running in port 3001")
+        })
